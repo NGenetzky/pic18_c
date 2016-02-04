@@ -29,6 +29,27 @@
 #define FCY             SYS_FREQ/4
 #define _XTAL_FREQ      SYS_FREQ
 
+
+//Unions and Structures
+typedef union {//Define a Union that can hold int or 4 unsigned chars.
+        unsigned char c[4];
+        unsigned int i;
+} ByteX4;
+
+typedef union {
+  struct {
+    unsigned char b0 : 1;
+    unsigned char b1 : 1;
+    unsigned char b2 : 1;
+    unsigned char b3 : 1;
+    unsigned char b4 : 1;
+    unsigned char b5 : 1;
+    unsigned char b6 : 1;
+    unsigned char b7 : 1;
+  };
+  unsigned char c;
+} ByteX1;
+
 /******************************************************************************/
 /* System Function Prototypes                                                 */
 /******************************************************************************/

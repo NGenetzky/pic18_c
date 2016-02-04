@@ -27,7 +27,7 @@
 
 /* <Initialize variables in user.h and insert code for user algorithms.> */
 
-void InitApp(void)
+void setup(void)
 {
     /* TODO Initialize User Ports/Peripherals/Project here */
     TRISAbits.RA5 = 1;  // Configure button as input.
@@ -44,9 +44,16 @@ void InitApp(void)
     /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
     /* Enable interrupts */
+    
+    // One time execution statements
+    print_hello_world();
+    
+    TRISD = 0x00;
+    LATD = 0xAA;
 }
 
 void loop(){
+    LATD ^= 0xFF;
     lcdChar('.');
     delay_1Sx(1);
 }

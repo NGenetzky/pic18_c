@@ -36,16 +36,11 @@ void main(void)
     ConfigureOscillator();
 
     /* Initialize I/O and Peripherals for application */
-    InitApp();
+    setup();
 
     /* TODO <INSERT USER APPLICATION CODE HERE> */
-    print_hello_world();
-    
-    TRISD = 0x00;
-    LATD = 0xAA;
 
     while(1) {
-        LATD ^= 0xFF;
         loop();
     }
 }

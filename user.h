@@ -10,6 +10,6 @@
 
 /* TODO User level functions prototypes (i.e. InitApp) go here */
 
-void InitApp(void);         /* I/O and Peripheral Initialization */
-void print_hello_world();
+void setup(void);         /* I/O and Peripheral Initialization */
 void loop();
+void print_hello_world();
