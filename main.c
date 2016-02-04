@@ -39,11 +39,14 @@ void main(void)
     InitApp();
 
     /* TODO <INSERT USER APPLICATION CODE HERE> */
+    print_hello_world();
+    
+    TRISD = 0x00;
+    LATD = 0xAA;
 
-    while(1)
-    {
-
+    while(1) {
+        LATD ^= 0xFF;
+        loop();
     }
-
 }
 

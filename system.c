@@ -29,3 +29,37 @@ void ConfigureOscillator(void)
     register, select new clock sources, and to wait until new clock sources
     are stable before resuming execution of the main project. */
 }
+
+
+#define CLOCK_10MHZ
+#if defined(CLOCK_10MHZ)
+void delay_1MSx(int n){
+    for(int i =0; i<n; i++){
+        Delay10KTCYx(1); // Delay 10,000 Cycles = 0.001 seconds
+    }
+}
+void delay_1Sx(int n){
+    for(int i =0; i<n; i++){
+        Delay10KTCYx(250); // Delay 2,500,000 Cycles = 0.25 seconds
+        Delay10KTCYx(250); // Delay 2,500,000 Cycles = 0.25 seconds
+        Delay10KTCYx(250); // Delay 2,500,000 Cycles = 0.25 seconds
+        Delay10KTCYx(250); // Delay 2,500,000 Cycles = 0.25 seconds
+    }
+}
+#elif defined(CLOCK_40MHZ)
+void delay_1MSx(int n){
+    for(int i =0; i<n; i++){
+        Delay10KTCYx(4); // Delay 40,000 Cycles = 0.001 seconds
+    }
+}
+void delay_1Sx(int n){
+    for(int i =0; i<n; i++){
+        for(counter = 0; counter<16; counter++){
+            Delay10KTCYx(250);  // Delay 2,500,000 Cycles = 0.0625 seconds
+        }
+    }
+}
+#elif defined(CLOCK_4MHZ)
+    
+
+#endif

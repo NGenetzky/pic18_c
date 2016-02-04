@@ -18,6 +18,8 @@
 #endif
 
 #include "user.h"
+#include "lcd.h"
+#include "system.h"
 
 /******************************************************************************/
 /* User Functions                                                             */
@@ -28,7 +30,13 @@
 void InitApp(void)
 {
     /* TODO Initialize User Ports/Peripherals/Project here */
-
+    TRISAbits.RA5 = 1;  // Configure button as input.
+    TRISBbits.RB0 = 1;  // Configure button as input.
+    //Only Affect PCFG3:PCFG0: A/D Port Configuration Control bits
+    //Change all ANx ports to digital I/O.
+    ADCON1 |= 0x0F;  
+            
+    lcd_init();
     /* Setup analog functionality and port direction */
 
     /* Initialize peripherals */
@@ -38,3 +46,12 @@ void InitApp(void)
     /* Enable interrupts */
 }
 
+void loop(){
+    lcdChar('.');
+    delay_1Sx(1);
+}
+
+void print_hello_world(){
+    char hello_cstr[] = "Hello World";
+    lcdWriteString(hello_cstr);
+}

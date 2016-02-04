@@ -45,3 +45,23 @@
 /******************************************************************************/
 
 /* TODO Fill in your configuration bits here using the config generator.      */
+#include <xc.h>
+
+#pragma config XINST = OFF       // Extended Instruction Set Enable bit (Instruction set extension and Indexed Addressing mode enabled)
+    //#pragma config FSCM = OFF       // Fail-Safe clock monitor disabled
+#pragma config IESO = OFF       // Int./Ext. Switch-Over disabled
+#pragma config PWRT = OFF       // Power-Up Timer disabled
+    //#pragma config BOR = OFF        // Brown Out Detect disabled
+
+    //#pragma config MCLRE = ON       // Master Clear enabled
+    //#pragma config STVR = ON        // Stack Overflow Reset enabled
+// LVP:=Single-Supply ICSP Enable bit (Single-Supply ICSP disabled)
+#pragma config LVP = OFF        // Low-voltage Programming disabled 
+#pragma config CP0 = OFF, CP1 = OFF, CPB = OFF, CPD = OFF
+#pragma config WRT0 = OFF, WRT1 = OFF, WRTB = OFF, WRTC = OFF, WRTD = OFF
+#pragma config EBTR0 = OFF, EBTR1 = OFF, EBTRB = OFF
+#if defined(_18F8722)      
+    #pragma config WDT = OFF        // Watchdog Timer disabled
+#elif defined(_18F87J11)
+    #pragma config WDTEN = OFF       // Watchdog Timer Enable bit (WDT disabled) 
+#endif
