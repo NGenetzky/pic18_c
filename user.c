@@ -44,21 +44,50 @@ void setup(void)
     /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
     /* Enable interrupts */
+    RCONbits.IPEN = 1; //Enable High/Low Priority distinction
     
-    // One time execution statements
-    print_hello_world();
+    setup_RB0_INT0();
     
+    INTCONbits.GIE = 1; //Enable HighPriority Global Interrupts
+    INTCONbits.GIEL = 1; //Enable LowPriority Global Interrupts
+    
+    // Other setup tasks
     TRISD = 0x00;
     LATD = 0xAA;
 }
 
 void loop(){
     LATD ^= 0xFF;
-    lcdChar('.');
+    poll_buttons();
     delay_1Sx(1);
 }
 
 void print_hello_world(){
     char hello_cstr[] = "Hello World";
     lcdWriteString(hello_cstr);
+}
+
+void setup_RB0_INT0(){
+    TRISBbits.RB0 =1; // Configure button as input.
+    
+    // INT0
+    INTCON2bits.INTEDG0 = 0;
+    INTCONbits.INT0F = 0;
+    INTCONbits.INT0IE = 1;
+}
+
+void button_RB0_on_click(){
+    LATD = 0xF0;
+}
+
+void poll_buttons(){
+    if(!PORTBbits.RB0){
+        // Left Button pressed.
+        
+    } else if(!PORTAbits.RA5){
+        // Right Button pressed.
+        
+    } else {
+        //No button pressed
+    }  
 }
