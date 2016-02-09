@@ -5,6 +5,7 @@
 #include "lcd.h" // Functions to write to onboard LCD.
 #include <spi.h>
 #include <delays.h>
+#include "system.h"
 
 ////LCD0325
 //An LCD display with two lines, 16 characters each, is connected to the SPI I/O

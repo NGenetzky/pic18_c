@@ -17,7 +17,7 @@
 
 #endif
 
-#include "user.h"
+#include "i2c_genetzky.h"
 
 /******************************************************************************/
 /* Interrupt Routines                                                         */
@@ -38,12 +38,16 @@ void interrupt high_isr(void)
 
 }
 
-// Low-priority interrupt routine
+/* Low-priority interrupt routine */
 void low_priority interrupt low_isr(void)
 {
       /* This code stub shows general interrupt handling.  Note that these
       conditional statements are not handled within 3 seperate if blocks.
       Do not use a seperate if block for each interrupt flag to avoid run
       time errors. */
+    if(PIR1bits.SSP1IF){ // I2C1_Intr_Status
+        I2C_on_flag(); // in "i2c_genetzky.h"
+        PIR1bits.SSP1IF=0; //I2C1_Clear_Intr_Status_Bit;
+    }
 
 }

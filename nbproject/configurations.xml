@@ -7,7 +7,7 @@
       <itemPath>system.h</itemPath>
       <itemPath>user.h</itemPath>
       <itemPath>lcd.h</itemPath>
-      <itemPath>E:/Onedrive/Cloud/Beast/Documents/MPLABXProjects/pic18_c/lcd2x16.h</itemPath>
+      <itemPath>i2c_genetzky.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -22,7 +22,7 @@
       <itemPath>system.c</itemPath>
       <itemPath>user.c</itemPath>
       <itemPath>lcd.c</itemPath>
-      <itemPath>E:/Onedrive/Cloud/Beast/Documents/MPLABXProjects/pic18_c/lcd2x16.c</itemPath>
+      <itemPath>i2c_genetzky.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -192,7 +192,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion></languageToolchainVersion>
+        <languageToolchainVersion>1.36</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
