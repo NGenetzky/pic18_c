@@ -32,11 +32,11 @@
 
 //Unions and Structures
 typedef union {//Define a Union that can hold int or 4 unsigned chars.
-        unsigned char c[4];
-        unsigned int i;
+    unsigned char c[4];
+    unsigned int i;
 } ByteX4;
 
-typedef union {
+typedef union ByteX1{
   struct {
     unsigned char b0 : 1;
     unsigned char b1 : 1;
