@@ -3,7 +3,7 @@
 /******************************************************************************/
 
 /* TODO Application specific user parameters used in user.c may go here */
-I2C_address = 0x06;
+uint8_t I2C_address = 0x06;
 
 /******************************************************************************/
 /* User Function Prototypes                                                   */

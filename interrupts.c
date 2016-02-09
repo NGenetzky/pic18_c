@@ -17,6 +17,8 @@
 
 #endif
 
+#include "i2c_genetzky.h"
+
 /******************************************************************************/
 /* Interrupt Routines                                                         */
 /******************************************************************************/
@@ -63,40 +65,15 @@ void high_isr(void)
 }
 
 /* Low-priority interrupt routine */
-#if defined(__XC) || defined(HI_TECH_C)
 void low_priority interrupt low_isr(void)
-#elif defined (__18CXX)
-#pragma code low_isr=0x18
-#pragma interruptlow low_isr
-void low_isr(void)
-#else
-#error "Invalid compiler selection for implemented ISR routines"
-#endif
 {
-
       /* This code stub shows general interrupt handling.  Note that these
       conditional statements are not handled within 3 seperate if blocks.
       Do not use a seperate if block for each interrupt flag to avoid run
       time errors. */
-
-#if 0
-
-      /* TODO Add Low Priority interrupt routine code here. */
-
-      /* Determine which flag generated the interrupt */
-      if(<Interrupt Flag 1>)
-      {
-          <Interrupt Flag 1=0>; /* Clear Interrupt Flag 1 */
-      }
-      else if (<Interrupt Flag 2>)
-      {
-          <Interrupt Flag 2=0>; /* Clear Interrupt Flag 2 */
-      }
-      else
-      {
-          /* Unhandled interrupts */
-      }
-
-#endif
+    if(PIR1bits.SSP1IF){ // I2C1_Intr_Status
+        I2C_on_flag(); // in "i2c_genetzky.h"
+        PIR1bits.SSP1IF=0; //I2C1_Clear_Intr_Status_Bit;
+    }
 
 }
