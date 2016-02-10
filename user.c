@@ -17,9 +17,11 @@
 
 #endif
 
-#include "user.h"
-#include "lcd.h"
 #include "system.h"
+#include "user.h"
+
+#include "lcd.h"
+#include "i2c_genetzky.h"
 
 /******************************************************************************/
 /* User Functions                                                             */
@@ -32,6 +34,7 @@ void setup(void)
     /* TODO Initialize User Ports/Peripherals/Project here */
     TRISAbits.RA5 = 1;  // Configure button as input.
     TRISBbits.RB0 = 1;  // Configure button as input.
+
     //Only Affect PCFG3:PCFG0: A/D Port Configuration Control bits
     //Change all ANx ports to digital I/O.
     ADCON1 |= 0x0F;  
@@ -47,6 +50,7 @@ void setup(void)
     RCONbits.IPEN = 1; //Enable High/Low Priority distinction
     
     setup_RB0_INT0();
+    I2C_setup_slave(I2C_address);
     
     INTCONbits.GIE = 1; //Enable HighPriority Global Interrupts
     INTCONbits.GIEL = 1; //Enable LowPriority Global Interrupts
@@ -57,15 +61,17 @@ void setup(void)
 }
 
 void loop(){
-    LATD ^= 0xFF;
-    poll_buttons();
-    delay_1Sx(1);
+    
 }
 
 void print_hello_world(){
     char hello_cstr[] = "Hello World";
     lcdWriteString(hello_cstr);
 }
+
+/******************************************************************************/
+/* Setup Functions                                                            */
+/******************************************************************************/
 
 void setup_RB0_INT0(){
     TRISBbits.RB0 =1; // Configure button as input.
@@ -76,10 +82,21 @@ void setup_RB0_INT0(){
     INTCONbits.INT0IE = 1;
 }
 
+/******************************************************************************/
+/* Interrupt Routines                                                         */
+/******************************************************************************/
 void button_RB0_on_click(){
-    LATD = 0xF0;
+    LATD ^= 0xFF;
+    I2C_master_write(0x02);
 }
 
+void I2C_on_flag(){
+    I2C_on_event();
+}
+
+/******************************************************************************/
+/* Loop Functions                                                             */
+/******************************************************************************/
 void poll_buttons(){
     if(!PORTBbits.RB0){
         // Left Button pressed.
