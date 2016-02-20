@@ -86,8 +86,14 @@ void setup_RB0_INT0(){
 /* Interrupt Routines                                                         */
 /******************************************************************************/
 void button_RB0_on_click(){
+    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
+    I2C_setup_master();
     LATD ^= 0xFF;
+    
     I2C_master_write(0x02);
+    
+    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
+    I2C_setup_slave(I2C_address);
 }
 
 void I2C_on_flag(){

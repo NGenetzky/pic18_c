@@ -30,8 +30,26 @@ void ConfigureOscillator(void)
     are stable before resuming execution of the main project. */
 }
 
+//Unions and Structures
+typedef union {//Define a Union that can hold int or 4 unsigned chars.
+    unsigned char c[4];
+    unsigned int i;
+} ByteX4;
 
-#define CLOCK_10MHZ
+typedef union ByteX1{
+  struct {
+    unsigned char b0 : 1;
+    unsigned char b1 : 1;
+    unsigned char b2 : 1;
+    unsigned char b3 : 1;
+    unsigned char b4 : 1;
+    unsigned char b5 : 1;
+    unsigned char b6 : 1;
+    unsigned char b7 : 1;
+  };
+  unsigned char c;
+} ByteX1;
+
 #if defined(CLOCK_10MHZ)
 void delay_1MSx(int n){
     for(int i =0; i<n; i++){

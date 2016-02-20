@@ -15,12 +15,23 @@
 #include <stdint.h>
 
 #include <i2c.h>
+#include "system.h"
 
 // TODO Insert C++ class definitions if appropriate
-#define I2C_BUFFER_SIZE 8
-uint8_t i2c_buffer[I2C_BUFFER_SIZE];
+// I2C_SPEED and I2C_DIVIDER is only used in master mode.
+const uint8_t I2C_SPEED = 100000; //100 kHz
+const uint8_t I2C_DIVIDER = SYS_FREQ/(4*I2C_SPEED)-1;
+
+#define I2C_BUFFER_SIZE 32
+bool received_data;
+volatile int I2C_in_index, I2C_out_index;
+volatile uint8_t I2C_in_buffer[I2C_BUFFER_SIZE+1];
+uint8_t I2C_out_buffer[I2C_BUFFER_SIZE];
+
 
 // TODO Insert declarations
+uint8_t I2C_create_address(uint8_t address, uint8_t read_from);
+void I2C_setup_master();
 void I2C_setup_slave(uint8_t address);
 void I2C_on_event();
 void I2C_on_recieve();
