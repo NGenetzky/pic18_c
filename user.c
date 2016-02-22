@@ -29,45 +29,6 @@
 
 /* <Initialize variables in user.h and insert code for user algorithms.> */
 
-void setup(void)
-{
-    /* TODO Initialize User Ports/Peripherals/Project here */
-    TRISAbits.RA5 = 1;  // Configure button as input.
-    TRISBbits.RB0 = 1;  // Configure button as input.
-
-    //Only Affect PCFG3:PCFG0: A/D Port Configuration Control bits
-    //Change all ANx ports to digital I/O.
-    ADCON1 |= 0x0F;  
-            
-    lcd_init();
-    /* Setup analog functionality and port direction */
-
-    /* Initialize peripherals */
-
-    /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
-
-    /* Enable interrupts */
-    RCONbits.IPEN = 1; //Enable High/Low Priority distinction
-    
-    setup_RB0_INT0();
-    I2C_setup_slave(I2C_address);
-    
-    INTCONbits.GIE = 1; //Enable HighPriority Global Interrupts
-    INTCONbits.GIEL = 1; //Enable LowPriority Global Interrupts
-    
-    // Other setup tasks
-    TRISD = 0x00;
-    LATD = 0xAA;
-}
-
-void loop(){
-    
-}
-
-void print_hello_world(){
-    char hello_cstr[] = "Hello World";
-    lcdWriteString(hello_cstr);
-}
 
 /******************************************************************************/
 /* Setup Functions                                                            */
@@ -86,14 +47,15 @@ void setup_RB0_INT0(){
 /* Interrupt Routines                                                         */
 /******************************************************************************/
 void button_RB0_on_click(){
-    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
-    I2C_setup_master();
-    LATD ^= 0xFF;
     
-    I2C_master_write(0x02);
+    if(!PORTAbits.RA5){
+        // Right Button pressed.
+        LATD ^= 0xFF; // Invert the LEDs on PORTD
+        setup_i2c_master_send();
+    } else {
+        print_i2c_inbuff();
+    }  
     
-    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
-    I2C_setup_slave(I2C_address);
 }
 
 void I2C_on_flag(){
@@ -113,4 +75,33 @@ void poll_buttons(){
     } else {
         //No button pressed
     }  
+}
+/******************************************************************************/
+/* Helper Functions                                                           */
+/******************************************************************************/
+
+void print_hello_world(){
+    char hello_cstr[] = "Hello World";
+    lcdWriteString(hello_cstr);
+}
+
+void print_i2c_inbuff(){
+    lcdGoTo(0);
+    I2C_in_index=5;
+    lcd_init();
+    for (int i = 0; i< I2C_in_index; i++){
+        lcdChar(I2C_in_buffer[i]);
+    }
+    I2C_in_index = 0;
+    print_hello_world();
+}
+
+void setup_i2c_master_send(){
+    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
+    I2C_setup_master();
+    
+    I2C_master_write(0x2<<1);
+    
+    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
+    I2C_setup_slave(I2C_address);
 }

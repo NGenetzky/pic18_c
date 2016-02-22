@@ -81,7 +81,7 @@ void I2C_on_event(){     // I2C slave interrupt handler
         //In Receive mode:
         // 1 = A byte is received while the SSPxBUF register is still holding 
         // the previous byte (must be cleared in software)
-        SSP1CON1bits.SSPOV = 1;
+        SSP1CON1bits.SSPOV = 0; // I think it the i2c module needs to be reset.
     }
     if(SSP1CON1bits.WCOL){// Write Collision
         //In Master Transmit mode:
@@ -107,6 +107,7 @@ void I2C_on_event(){     // I2C slave interrupt handler
                 LATD = 4;
                 
             }else{
+                // Currently requests go here.
                 I2C_on_request(); //    transmit data to master
                 LATD = 0xF3;
             }
@@ -148,12 +149,14 @@ void I2C_on_event(){     // I2C slave interrupt handler
 void I2C_on_recieve(){
     //receive data from master (not an address)
     uint8_t data = ReadI2C1();
-    delay_1MSx(100);
     LATD = data;
+    I2C_in_buffer[I2C_in_index]= data;
+    
+    I2C_in_index++;
     SSPCON1bits.CKP = 1;                  // Release SCL line
 }
 void I2C_on_request(){
-    WriteI2C1('C');
+    WriteI2C1('Z');
 
     // If clock stretching is enabled then the clock must be released:
     SSPCON1bits.CKP = 1;                  // Release SCL line
@@ -166,7 +169,7 @@ int I2C_master_request_from(uint8_t slave_address){
     IdleI2C();                         // Wait for the end of the START condition
     WriteI2C( slave_address | 0x01 );  // Send address with R/W set for read
     IdleI2C();                         // Wait for ACK
-    received_byte = ReadI2C();               // Read first byte of data
+    received_byte = ReadI2C();         // Read first byte of data
     
     //AckI2C();                          // Send ACK
     //data[n] = ReadI2C();               // Read nth byte of data
@@ -179,14 +182,30 @@ int I2C_master_request_from(uint8_t slave_address){
 //Wire.beginTransmission(I2C_target); // transmit to slave device
 //Wire.write(I2C_out_buffer, len);
 //error_code = Wire.endTransmission(); // stop transmitting
-
+void begin_tranmission(uint8_t slave_address){
+    IdleI2C();                         // Wait until the bus is idle
+    StartI2C();                        // Send START condition
+    IdleI2C();                         // Wait for the end of the START condition
+    WriteI2C( slave_address & 0xfe );  // Send address with R/W cleared for write
+}
+// Must call begin_tranmission before calling this function and then afterwards
+// end_transmission must be called before data is sent.
+void i2c_write(uint8_t* data, uint8_t len){
+    for(int i=0; i<len; i++){
+        WriteI2C( data[i] );                   // Write first byte of data
+    }
+}
+void end_transmission(){
+    IdleI2C();                         // Wait for ACK
+    StopI2C();                         // Hang up, send STOP condition
+}
 void I2C_master_write(uint8_t slave_address){
     IdleI2C();                         // Wait until the bus is idle
     StartI2C();                        // Send START condition
     IdleI2C();                         // Wait for the end of the START condition
     WriteI2C( slave_address & 0xfe );  // Send address with R/W cleared for write
     IdleI2C();                         // Wait for ACK
-    WriteI2C( '8' );               // Write first byte of data
+    WriteI2C( '8' );                   // Write first byte of data
     
     //IdleI2C();                         // Wait for ACK
     //WriteI2C( data[n] );               // Write nth byte of data

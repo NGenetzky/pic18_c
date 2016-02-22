@@ -18,3 +18,5 @@ void print_hello_world();
 void setup_RB0_INT0();
 void button_RB0_on_click();
 void I2C_on_flag();
+void print_i2c_inbuff();
+void setup_i2c_master_send();

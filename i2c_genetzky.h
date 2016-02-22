@@ -19,12 +19,11 @@
 
 // TODO Insert C++ class definitions if appropriate
 // I2C_SPEED and I2C_DIVIDER is only used in master mode.
-const uint8_t I2C_SPEED = 100000; //100 kHz
+const long I2C_SPEED = 100000; //100 kHz
 const uint8_t I2C_DIVIDER = SYS_FREQ/(4*I2C_SPEED)-1;
 
 #define I2C_BUFFER_SIZE 32
-bool received_data;
-volatile int I2C_in_index, I2C_out_index;
+volatile int I2C_in_index=0, I2C_out_index=0;
 volatile uint8_t I2C_in_buffer[I2C_BUFFER_SIZE+1];
 uint8_t I2C_out_buffer[I2C_BUFFER_SIZE];
 
@@ -37,6 +36,9 @@ void I2C_on_event();
 void I2C_on_recieve();
 void I2C_on_request();
 int I2C_master_request_from(uint8_t slave_address);
+void begin_tranmission(uint8_t slave_address);
+void i2c_write(uint8_t* data, uint8_t len);
+void end_transmission();
 void I2C_master_write(uint8_t slave_address);
 
 #endif	/* I2C_GENETZKY_H */

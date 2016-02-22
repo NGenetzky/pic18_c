@@ -20,6 +20,8 @@
 #include "system.h"        /* System funct/params, like osc/peripheral config */
 #include "user.h"          /* User funct/params, such as InitApp */
 
+#include "i2c_genetzky.h"
+#include "lcd.h"
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
@@ -45,3 +47,38 @@ void main(void)
     }
 }
 
+
+void setup(void)
+{
+    /* TODO Initialize User Ports/Peripherals/Project here */
+    TRISAbits.RA5 = 1;  // Configure button as input.
+    TRISBbits.RB0 = 1;  // Configure button as input.
+
+    //Only Affect PCFG3:PCFG0: A/D Port Configuration Control bits
+    //Change all ANx ports to digital I/O.
+    ADCON1 |= 0x0F;  
+            
+    lcd_init();
+    /* Setup analog functionality and port direction */
+
+    /* Initialize peripherals */
+
+    /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
+
+    /* Enable interrupts */
+    RCONbits.IPEN = 1; //Enable High/Low Priority distinction
+    
+    setup_RB0_INT0();
+    I2C_setup_slave(I2C_address);
+    
+    INTCONbits.GIE = 1; //Enable HighPriority Global Interrupts
+    INTCONbits.GIEL = 1; //Enable LowPriority Global Interrupts
+    
+    // Other setup tasks
+    TRISD = 0x00;
+    LATD = 0xAA;
+}
+
+void loop(){
+
+}
