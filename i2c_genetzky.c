@@ -4,9 +4,11 @@
 
 #include "i2c_genetzky.h"
 
+// Pins:
 // Serial clock (SCLx) ? RC3/SCK1/SCL1 or RD6/SCK2/SCL2
 // Serial data (SDAx) ? RC4/SDI1/SDA1 or RD5/SDI2/SDA2
 
+// Registers
 // MSSP Control Register 1 (SSPxCON1)
 // MSSP Control Register 2 (SSPxCON2)
 // MSSP Status Register (SSPxSTAT)
@@ -14,6 +16,8 @@
 // MSSP Shift Register (SSPxSR) ? Not directly accessible
 // MSSP Address Register (SSPxADD)
 
+//Library Functions
+//WriteI2C1(); // 2 means NACK, 1 means Write Collision. 0 is success.
 /******************************************************************************/
 /* I2C library patch                                                          */
 /******************************************************************************/
@@ -42,8 +46,10 @@ void I2C_setup_master(){
     SSPSTAT        = 0x00;          // Slew rate in this reg. //Disable SMBus specific inputs
     SSPCON2        = 0b00000000;    // GCEN: General Call address (00h) (Slave mode only) 0 = General call address disabled
                                     // b0_SEN: Start Condition Enable/Stretch Enable bit 
+
     I2C1_Clear_Intr_Status_Bit;     // Clear MSSP interrupt request flag
         //PIR1bits.SSPIF = 0;
+
     EnableIntI2C1; // Enable the interrupt 
         // PIE1bits.SSPIE = 1;      // Enable MSSP interrupt enable bit
 }
@@ -70,8 +76,35 @@ void I2C_setup_slave(uint8_t address){
         // PIE1bits.SSPIE = 1;      // Enable MSSP interrupt enable bit
 }
 
+void I2C_master_event(){
+    //Start condition
+    if(SSP1CON2bits.SEN){
+        // 1. The user generates a Start condition by setting the Start Enable bit, SEN (SSPxCON2<0>).
+
+    } else
+    //Stop condition
+    if(SSP1CON2bits.PEN){
+        // 11. The user generates a Stop condition by setting the Stop Enable bit, PEN (SSPxCON2<2>).
+        
+    } else
+    //Data transfer byte transmitted/received
+        //NOT CAUGHT
+        
+    //Acknowledge transmit
+    if(SSP1CON2bits.ACKEN){
+        if(SSPSTATbits.D_A){
+            //Slave has ACK that address was received
+            
+        } else {
+            //OR Slave has ACK that data was received
+            
+        }
+    }
+    //Repeated Start
+        //NOT CAUGHT
+}
 // Called from interrupt function
-void I2C_on_event(){     // I2C slave interrupt handler
+void I2C_slave_event(){     // I2C slave interrupt handler
 // The following events will cause the SSP Interrupt Flag bit, SSPxIF, to be set 
 // (and SSP interrupt, if enabled):
     // Start condition; Stop condition; Data transfer byte transmitted/received;
@@ -196,20 +229,6 @@ void i2c_write(uint8_t* data, uint8_t len){
     }
 }
 void end_transmission(){
-    IdleI2C();                         // Wait for ACK
-    StopI2C();                         // Hang up, send STOP condition
-}
-void I2C_master_write(uint8_t slave_address){
-    IdleI2C();                         // Wait until the bus is idle
-    StartI2C();                        // Send START condition
-    IdleI2C();                         // Wait for the end of the START condition
-    WriteI2C( slave_address & 0xfe );  // Send address with R/W cleared for write
-    IdleI2C();                         // Wait for ACK
-    WriteI2C( '8' );                   // Write first byte of data
-    
-    //IdleI2C();                         // Wait for ACK
-    //WriteI2C( data[n] );               // Write nth byte of data
-    
     IdleI2C();                         // Wait for ACK
     StopI2C();                         // Hang up, send STOP condition
 }

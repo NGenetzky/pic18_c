@@ -51,7 +51,7 @@ void button_RB0_on_click(){
     if(!PORTAbits.RA5){
         // Right Button pressed.
         LATD ^= 0xFF; // Invert the LEDs on PORTD
-        setup_i2c_master_send();
+        
     } else {
         print_i2c_inbuff();
     }  
@@ -59,7 +59,7 @@ void button_RB0_on_click(){
 }
 
 void I2C_on_flag(){
-    I2C_on_event();
+    I2C_master_event();
 }
 
 /******************************************************************************/
@@ -96,12 +96,3 @@ void print_i2c_inbuff(){
     print_hello_world();
 }
 
-void setup_i2c_master_send(){
-    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
-    I2C_setup_master();
-    
-    I2C_master_write(0x2<<1);
-    
-    SSPCON1bits.SSPEN = 0; // Turn off the I2C module (reset).
-    I2C_setup_slave(I2C_address);
-}

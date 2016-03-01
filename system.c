@@ -72,7 +72,7 @@ void delay_1MSx(int n){
 }
 void delay_1Sx(int n){
     for(int i =0; i<n; i++){
-        for(counter = 0; counter<16; counter++){
+        for(int counter = 0; counter<16; counter++){
             Delay10KTCYx(250);  // Delay 2,500,000 Cycles = 0.0625 seconds
         }
     }

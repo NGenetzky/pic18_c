@@ -14,9 +14,9 @@
 // OSC = INTIO67 // Intern// al oscillator block, port function on RA6 and RA7 
 // OSC = INTIO7 // Internal oscillator block, CLKO function on RA6, port function on RA7 
 
-#define CLOCK_10MHZ
+#define CLOCK_40MHZ
 #if defined(CLOCK_10MHZ)
-    #pragma config OSC =HS
+    #pragma config OSC = HS
     #define SYS_FREQ        10000000L
 #elif defined(CLOCK_40MHZ)
     #pragma config OSC = HSPLL

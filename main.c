@@ -62,14 +62,14 @@ void setup(void)
     /* Setup analog functionality and port direction */
 
     /* Initialize peripherals */
-
+     I2C_setup_master();
+     
     /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
     /* Enable interrupts */
     RCONbits.IPEN = 1; //Enable High/Low Priority distinction
     
     setup_RB0_INT0();
-    I2C_setup_slave(I2C_address);
     
     INTCONbits.GIE = 1; //Enable HighPriority Global Interrupts
     INTCONbits.GIEL = 1; //Enable LowPriority Global Interrupts
@@ -80,5 +80,13 @@ void setup(void)
 }
 
 void loop(){
-
+    char data[] = {'A'};
+    uint8_t slave = 0x2<<1;
+    
+    begin_tranmission(slave);
+    i2c_write(data, 1);
+    end_transmission();
+    LATD ^= 0xFF; // Invert the LEDs on PORTD
+    
+    delay_1Sx(1);
 }
