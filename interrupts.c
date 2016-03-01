@@ -32,7 +32,7 @@ void interrupt high_isr(void)
       button_RB0_on_click();
       INTCONbits.INT0IF =0;  //Clear flag
     } else if(PIR1bits.SSP1IF){ // I2C1_Intr_Status
-        I2C_on_flag(); // in "i2c_genetzky.h"
+        I2C_on_flag();
         PIR1bits.SSP1IF=0; //I2C1_Clear_Intr_Status_Bit;
     } else {
         // Unhandled interrupts

@@ -44,6 +44,7 @@ void I2C_setup_master(){
                                     // SSPM3:SSPM0: SSP Mode Select bits         - 1000 = I2C Master mode, clock = FOSC/(4 * (SSPxADD + 1))
                                         
     SSPSTAT        = 0x00;          // Slew rate in this reg. //Disable SMBus specific inputs
+                                    // b0: 0 = Slew rate control enabled for High-Speed mode (400 kHz)
     SSPCON2        = 0b00000000;    // GCEN: General Call address (00h) (Slave mode only) 0 = General call address disabled
                                     // b0_SEN: Start Condition Enable/Stretch Enable bit 
 
@@ -79,37 +80,35 @@ void I2C_setup_slave(uint8_t address){
 void I2C_master_event(){
     //Start condition
     if(SSP1CON2bits.SEN){
-        // 1. The user generates a Start condition by setting the Start Enable bit, SEN (SSPxCON2<0>).
-
-    } else
+        // 1. The user generated a Start condition by setting the Start Enable bit, SEN (SSPxCON2<0>).
+        // The user loads the SSPxBUF with the slave address to transmit.
+        LATD=0xD1;
+    } 
     //Stop condition
-    if(SSP1CON2bits.PEN){
-        // 11. The user generates a Stop condition by setting the Stop Enable bit, PEN (SSPxCON2<2>).
-        
-    } else
+    else if(SSP1CON2bits.PEN){
+        // 11. The user generated a Stop condition by setting the Stop Enable bit, PEN (SSPxCON2<2>).
+        LATD=0xD2;
+    } 
     //Data transfer byte transmitted/received
         //NOT CAUGHT
         
     //Acknowledge transmit
-    if(SSP1CON2bits.ACKEN){
+    else if(SSP1CON2bits.ACKSTAT){
         if(SSPSTATbits.D_A){
-            //Slave has ACK that address was received
-            
+            //Slave has ACK that data was received
+            LATD=0xD3;
         } else {
-            //OR Slave has ACK that data was received
-            
+            //OR Slave has ACK that address was received
+            LATD=0xD4;
         }
+    } else{
+        LATD=0xD5;
     }
     //Repeated Start
         //NOT CAUGHT
 }
 // Called from interrupt function
 void I2C_slave_event(){     // I2C slave interrupt handler
-// The following events will cause the SSP Interrupt Flag bit, SSPxIF, to be set 
-// (and SSP interrupt, if enabled):
-    // Start condition; Stop condition; Data transfer byte transmitted/received;
-    // Acknowledge transmit; Repeated Start
-
     if(SSP1CON1bits.SSPOV){// Input Overflow
         //In Receive mode:
         // 1 = A byte is received while the SSPxBUF register is still holding 
@@ -127,57 +126,73 @@ void I2C_slave_event(){     // I2C slave interrupt handler
         SSP1CON1bits.WCOL = 0;
     }
     
-    if(SSPSTATbits.S == 0){
-        // Something bad. Start bit was not detected last.
-    }
-    
-    if(SSPSTATbits.R_NOT_W == 1){
-        // Read request from master
-        if(SSPSTATbits.D_A == 1){
-            if(SSPSTATbits.BF == 0){ //S = 1, D_A = 1, R_W = 1, BF = 0
-                //State 4:      I2C read operation, last byte was a data byte.
-                I2C_on_request(); //    transmit data to master
-                LATD = 4;
-                
-            }else{
-                // Currently requests go here.
-                I2C_on_request(); //    transmit data to master
-                LATD = 0xF3;
-            }
-        } else { 
-            if(SSPSTATbits.BF == 0){ //S = 1, D_A = 0, R_W = 1, BF = 0
-                //State 3:      I2C read operation, last byte was an address byte.
-                I2C_on_request(); //    transmit data to master
-                LATD = 3;
-            } else{ //S = 1, D_A = 0, R_W = 1, BF = 1
-                //State 3b:  I2C read operation, last byte was an address byte. MMSP w/ Global call
-                I2C_on_request(); //    transmit data to master
-                LATD = 7;
-            }
-        }
+    if(( !SSPSTATbits.D_NOT_A ) && ( SSPSTATbits.BF )){
+        //If the addresses match and the BF and SSPOV bits are clear.
+        // Master has began communicating with this slave.
+        
+    } else if(( SSPSTATbits.D_NOT_A ) && ( SSPSTATbits.BF )){
+        // Master has send data to this slave.
+        
+    } else if(( SSPSTATbits.R_NOT_W ) && ( SSPSTATbits.BF )){
+        // Master has requested from this slave.
+        I2C_on_request(); //    transmit data to master
     } else{
-        // Master writing data to slave
-        if(SSPSTATbits.D_A == 1){ 
-            
-            if(SSPSTATbits.BF == 1){ //S = 1, D_A = 1, R_W = 0, BF = 1
-                //State 2:      I2C write operation, last byte was a data byte.
-                I2C_on_recieve();
-                LATD = 2;
-            }else{
-                //State 5:  Slave I2C logic reset by NACK from master.
-                LATD = 5;
-            }
-        } else {
-            if(SSPSTATbits.BF == 1){//S = 1, D_A = 0, R_W = 0, BF = 1
-                //State 1:      I2C write operation, last byte was an address byte.
-                I2C_on_recieve();
-                LATD = 1;
-            }else{
-                LATD = 0xF1;
-            }
-        }
+        LATD = SSP1STAT;
     }
     uint8_t junk = SSPBUF;  // Nothing in buffer so exit
+
+//
+//    if(SSPSTATbits.S == 0){
+//        // Something bad. Start bit was not detected last.
+//    }
+//    
+//    if(SSPSTATbits.R_NOT_W == 1){
+//        // Read request from master
+//        if(SSPSTATbits.D_A == 1){
+//            if(SSPSTATbits.BF == 0){ //S = 1, D_A = 1, R_W = 1, BF = 0
+//                //State 4:      I2C read operation, last byte was a data byte.
+//                I2C_on_request(); //    transmit data to master
+//                LATD = 4;
+//                
+//            }else{
+//                // Currently requests go here.
+//                I2C_on_request(); //    transmit data to master
+//                LATD = 0xF3;
+//            }
+//        } else { 
+//            if(SSPSTATbits.BF == 0){ //S = 1, D_A = 0, R_W = 1, BF = 0
+//                //State 3:      I2C read operation, last byte was an address byte.
+//                I2C_on_request(); //    transmit data to master
+//                LATD = 3;
+//            } else{ //S = 1, D_A = 0, R_W = 1, BF = 1
+//                //State 3b:  I2C read operation, last byte was an address byte. MMSP w/ Global call
+//                I2C_on_request(); //    transmit data to master
+//                LATD = 7;
+//            }
+//        }
+//    } else{
+//        // Master writing data to slave
+//        if(SSPSTATbits.D_A == 1){ 
+//            
+//            if(SSPSTATbits.BF == 1){ //S = 1, D_A = 1, R_W = 0, BF = 1
+//                //State 2:      I2C write operation, last byte was a data byte.
+//                I2C_on_recieve();
+//                LATD = 2;
+//            }else{
+//                //State 5:  Slave I2C logic reset by NACK from master.
+//                LATD = 5;
+//            }
+//        } else {
+//            if(SSPSTATbits.BF == 1){//S = 1, D_A = 0, R_W = 0, BF = 1
+//                //State 1:      I2C write operation, last byte was an address byte.
+//                I2C_on_recieve();
+//                LATD = 1;
+//            }else{
+//                LATD = 0xF1;
+//            }
+//        }
+//    }
+//    uint8_t junk = SSPBUF;  // Nothing in buffer so exit
 }
 void I2C_on_recieve(){
     //receive data from master (not an address)
