@@ -3,7 +3,6 @@
 /******************************************************************************/
 
 /* TODO Application specific user parameters used in user.c may go here */
-uint8_t I2C_address = 0x06;
 
 /******************************************************************************/
 /* User Function Prototypes                                                   */
@@ -19,3 +18,8 @@ void setup_RB0_INT0();
 void button_RB0_on_click();
 void I2C_on_flag();
 void print_i2c_inbuff();
+
+void loop_system();
+void system4_SLAVE_LED();
+void system5_MASTER_SEND();
+void system6_LCD_RINGBUFFER();

@@ -22,13 +22,14 @@
 
 #include "lcd.h"
 #include "i2c_genetzky.h"
-
+#include "ringbuffer.h"
 /******************************************************************************/
 /* User Functions                                                             */
 /******************************************************************************/
 
 /* <Initialize variables in user.h and insert code for user algorithms.> */
-
+extern int state;
+extern int sys;
 
 /******************************************************************************/
 /* Setup Functions                                                            */
@@ -51,15 +52,31 @@ void button_RB0_on_click(){
     if(!PORTAbits.RA5){
         // Right Button pressed.
         LATD ^= 0xFF; // Invert the LEDs on PORTD
+        if(sys==4){
+            sys = 6;
+        } else if(sys==6){
+            sys = 4;
+        }
         
     } else {
-        print_i2c_inbuff();
+        if(!ringbuffer_is_empty()){
+            LATD = ringbuffer_get();
+        } else{
+            LATD ^= 0x0F; // Invert the LEDs on PORTD
+            delay_1MSx(500);
+            LATD ^= 0x0F; // Invert the LEDs on PORTD
+        }
+        
     }  
     
 }
 
 void I2C_on_flag(){
-    I2C_master_event();
+    if(sys == 4){
+        I2C_slave_event();
+    } else if(sys == 5){
+        I2C_master_event();
+    } 
 }
 
 /******************************************************************************/
@@ -76,6 +93,16 @@ void poll_buttons(){
         //No button pressed
     }  
 }
+
+void loop_system(){
+    if(sys==4){
+        system4_SLAVE_LED();
+    } else if(sys==5){
+        system5_MASTER_SEND();
+    } else if (sys==6){
+        system6_LCD_RINGBUFFER();
+    }
+}
 /******************************************************************************/
 /* Helper Functions                                                           */
 /******************************************************************************/
@@ -87,12 +114,87 @@ void print_hello_world(){
 
 void print_i2c_inbuff(){
     lcdGoTo(0);
-    I2C_in_index=5;
     lcd_init();
-    for (int i = 0; i< I2C_in_index; i++){
-        lcdChar(I2C_in_buffer[i]);
+    while(!ringbuffer_is_empty()){
+        lcdChar(ringbuffer_get());
     }
-    I2C_in_index = 0;
+
     print_hello_world();
 }
+/******************************************************************************/
+/* Systems                                                                    */
+/******************************************************************************/
+void system4_SLAVE_LED(){
+    if(state==1){
+        I2C_setup_slave(0x07<<1);
+        state=2;
+    } else if(state==2){
+        if(!ringbuffer_is_empty()){
+            state=3;
+        } else{
+            state = 4;
+        }
+    } else if(state==3){ // Buffer has data
+        if(!PORTAbits.RA5){// Right Button pressed.
+            LATD = ringbuffer_get();
+        } else {
+            LATD ^= 0x40; // Invert 2nd from left LED
+        }  
+        state = 5;
+    } else if (state==4){
+        state = 5;
+    } else if(state==5){
+        delay_1MSx(500);
+        state = 2;
+    }
+}
 
+void system5_MASTER_SEND(){
+    char data[] = {0xF0, 0xF1, 0xF2, 0xF3, 0xF4};
+    if(state==1){
+        I2C_setup_master();
+        state=2;
+
+    } else if(state==2){
+        if(!PORTAbits.RA5){
+            state = 3;
+        } else {
+            //No button pressed
+            state =4;
+        } 
+    } else if(state==3){
+        
+    } else if (state==4){
+        begin_tranmission(0x05);
+        i2c_write(data, 5);
+        end_transmission();
+        
+    } else if(state==5){
+        delay_1MSx(500);
+    }
+}
+
+void system6_LCD_RINGBUFFER(){
+    if(state==1){
+        SSP1CON1bits.SSPEN = 0; // 0 = Disables serial port and configures these pins as I/O port pins
+        lcd_init();
+        state = 2;
+        
+    } else if(state==2){
+        lcdGoTo(0);
+        if(!ringbuffer_is_empty()){
+            lcdChar(ringbuffer_get()); 
+        } else {
+            lcdChar('N');
+            lcdChar('o');
+            lcdChar('n');
+            lcdChar('e');
+        }
+        state = 3;
+    } else if (state ==3){
+        delay_1MSx(500);
+        LATD ^= 0xFF;
+        delay_1MSx(500);
+        LATD ^= 0xFF;
+    }
+}

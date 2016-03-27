@@ -19,8 +19,9 @@
 
 // TODO Insert C++ class definitions if appropriate
 
-//Define the speed mode used for I2C. See page 234 of PIC18F8722 Datasheet.
-// I2C_SPEED and I2C_DIVIDER is only used in master mode.
+//Define the speed mode used for I2C.
+// See Table 19-3 I2C? CLOCK RATE w/BRG (page 234) of PIC18F8722 Datasheet.
+// I2C_DIVIDER is only used in master mode.
 #define I2C_SPEED_100KHZ
 #if defined(CLOCK_10MHZ) // Frequency is set in system.h
     #if defined(I2C_SPEED_100KHZ)

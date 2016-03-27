@@ -22,12 +22,14 @@
 
 #include "i2c_genetzky.h"
 #include "lcd.h"
+#include "ringbuffer.h"
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 
 /* i.e. uint8_t <variable_name>; */
-
+int sys=-1;
+int state=-1;
 /******************************************************************************/
 /* Main Program                                                               */
 /******************************************************************************/
@@ -58,11 +60,12 @@ void setup(void)
     //Change all ANx ports to digital I/O.
     ADCON1 |= 0x0F;  
             
-    lcd_init();
+    //lcd_init();
     /* Setup analog functionality and port direction */
 
     /* Initialize peripherals */
-     I2C_setup_master();
+     sys =4;
+     state=1;
      
     /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
@@ -80,13 +83,5 @@ void setup(void)
 }
 
 void loop(){
-    char data[] = {'A'};
-    uint8_t slave = 0x2<<1;
-    
-    begin_tranmission(slave);
-    i2c_write(data, 1);
-    end_transmission();
-    LATD ^= 0xFF; // Invert the LEDs on PORTD
-    
-    delay_1Sx(1);
+    loop_system();
 }
